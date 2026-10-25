@@ -41,9 +41,9 @@ install = "cd ponysay && python3 setup.py --freedom=partial --without-info --wit
 
 # Run the installed ponysay.  With no arguments this prints a random quote
 # from a random pony (`ponysay -q`); pass-through arguments such as
-# `-q twilight` or `-l` work too.  Depends on `install` so it also works from
-# a clean checkout.
-ponysay = { cmd = "sh \"$PIXI_PROJECT_ROOT/scripts/ponysay-run.sh\"", depends-on = ["install"] }
+# `-q twilight` or `-l` work too.  The wrapper installs quietly on first use,
+# so this does not depend on the verbose `install` task and stays clean.
+ponysay = "sh \"$PIXI_PROJECT_ROOT/scripts/ponysay-run.sh\""
 
 # Install into the pixi environment and render a sample emo quote.  This is a
 # smoke test for the `install` + `ponysay` tasks above.
