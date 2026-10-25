@@ -39,10 +39,11 @@ quotes = "cd ponysay && python3 ../scripts/compile-quotes.py"
 # `/var/cache/ponysay`.
 install = "cd ponysay && python3 setup.py --freedom=partial --without-info --without-man --without-shell --without-shared-cache --prefix \"$PIXI_PROJECT_ROOT/.pixi/envs/default\" install"
 
-# Run the installed ponysay with arbitrary arguments, e.g.
-# `pixi run ponysay -q twilight` or `pixi run ponysay -l`.  Depends on
-# `install` so it also works from a clean checkout.
-ponysay = { cmd = "\"$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/ponysay\"", depends-on = ["install"] }
+# Run the installed ponysay.  With no arguments this prints a random quote
+# from a random pony (`ponysay -q`); pass-through arguments such as
+# `-q twilight` or `-l` work too.  Depends on `install` so it also works from
+# a clean checkout.
+ponysay = { cmd = "sh \"$PIXI_PROJECT_ROOT/scripts/ponysay-run.sh\"", depends-on = ["install"] }
 
 # Install into the pixi environment and render a sample emo quote.  This is a
 # smoke test for the `install` + `ponysay` tasks above.

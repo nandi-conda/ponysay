@@ -57,8 +57,14 @@ trying to create `/var/cache/ponysay`.
 ### `pixi run ponysay ...`
 
 Runs the installed ponysay.  The task depends on `install`, so it works from a
-clean checkout as well as after `pixi run smoke`; any arguments after the task
-name are passed to `ponysay`:
+clean checkout as well as after `pixi run smoke`.  With no arguments it prints
+a random quote from a random pony:
+
+```sh
+pixi run ponysay
+```
+
+Any arguments after the task name are passed through to `ponysay`:
 
 ```sh
 pixi run ponysay -q twilight
