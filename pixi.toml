@@ -1,38 +1,36 @@
-# Pixi manifest for the emo-quote ponysay fork.
+# Pixi manifest for the ponysay project.
 #
-# The upstream ponysay checkout lives in `ponysay/`.  The build/run tasks below
-# all run from that directory.
+# The upstream ponysay checkout (with the emo `dear diary, ...` quote set)
+# lives in `ponysay/`.  The build is pure Python once the optional
+# info/man/shell extras are disabled, so `python` is the only dependency we
+# declare.  Texinfo (`makeinfo`) is intentionally NOT declared: it is only
+# needed for the optional info manual, and the default build task pins it away
+# with `--without-info`.
+#
+# See PIXI-VALIDATION.md for the clean-environment validation of these tasks.
 
 [workspace]
-name = "ponysay-emo-quotes"
-version = "0.1.0"
-description = "Emo-quote fork of ponysay, managed with pixi"
+name = "ponysay"
+version = "3.0.4"
 channels = ["conda-forge"]
 platforms = ["linux-64"]
 
-# The quote compiler and the `--without-info --without-man --without-shell`
-# build only need a Python 3 interpreter.  A full build of the optional info
-# manual additionally needs texinfo (`makeinfo`); the other packages here are
-# the build/runtime tooling named in ponysay's README (make, gzip, coreutils
-# for `stty`).
 [dependencies]
-python = "3.13.*"
-make = "*"
-texinfo = "*"
-gzip = "*"
-coreutils = "*"
+# 2016-era ponysay runs on Python 3; the upper bound keeps the lock away from
+# versions that emit deprecation warnings for its old escape sequences.
+python = ">=3.8,<3.14"
 
 [tasks]
 
-# The full-safe build path: everything ponysay needs to run, without the
-# optional info/man/shell extras that require texinfo and friends.
-build = { cmd = "python3 setup.py --freedom=partial --without-info --without-man --without-shell build", cwd = "ponysay", description = "Build ponysay without the optional info/man/shell extras" }
+# Build ponysay without the optional info/man/shell extras.  `--without-info`
+# is required on systems without texinfo/makeinfo.
+build = "cd ponysay && python3 setup.py --freedom=partial --without-info --without-man --without-shell build"
 
-# Just compile the quote data (`ponyquotes/*.<N>` -> `quotes/<group>.<N>`),
-# exactly like the quote-compiler step in `setup.py build`.
-quotes = { cmd = "python3 ../scripts/compile-quotes.py", cwd = "ponysay", description = "Compile only the pony quote data" }
+# Compile only the quote data (`ponyquotes/*.<N>` -> `quotes/<group>.<N>`),
+# reproducing the quote-compiler step of `setup.py build`.
+quotes = "cd ponysay && python3 ../scripts/compile-quotes.py"
 
-# Render a sample emo quote.  `XDG_DATA_HOME` points at the repo root so the
-# built `ponysay.install` zipapp finds the checkout's `ponysay/ponies` and the
-# compiled `ponysay/quotes` data.
-sample-quote = { cmd = "XDG_DATA_HOME=\"$PIXI_PROJECT_ROOT\" python3 ponysay.install -q twilight", cwd = "ponysay", depends-on = ["build"], description = "Render a sample quote (`ponysay -q twilight`)" }
+# Install into the pixi environment and render a sample emo quote.  Non-root
+# installs also pass `--without-shared-cache` so `setup.py install` does not
+# try to create `/var/cache/ponysay`.
+smoke = "cd ponysay && python3 setup.py --freedom=partial --without-info --without-man --without-shell --without-shared-cache --prefix \"$PIXI_PROJECT_ROOT/.pixi/envs/default\" install && \"$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/ponysay\" -q twilight"

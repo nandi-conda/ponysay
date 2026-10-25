@@ -36,20 +36,20 @@ the quote compiler.  On systems without texinfo, build with:
 
 ## Using pixi
 
-The repository root has a [`pixi.toml`](../pixi.toml) manifest that pins a
-Python 3.13 environment plus the build/runtime tooling from conda-forge
-(`make`, `texinfo`, `gzip`, `coreutils`).  `texinfo` is only needed for the
-optional info manual; the quote compiler and the
-`--without-info --without-man --without-shell` build work without it.
+The repository root has a [`pixi.toml`](../pixi.toml) manifest that declares a
+conda-forge Python interpreter (`>=3.8,<3.14`) and three tasks.  Texinfo is
+intentionally not declared: it is only needed for the optional info manual,
+and the default build task pins it away with `--without-info`.
 
 Install [pixi](https://pixi.sh) (e.g. `curl -fsSL https://pixi.sh/install.sh
 | bash`), then run the tasks from the repository root:
 
-    pixi run build          # python3 setup.py --freedom=partial \
-                            #     --without-info --without-man --without-shell build
+    pixi run build          # build without info/man/shell extras
     pixi run quotes         # compile only ponyquotes/* -> quotes/*
-    pixi run sample-quote   # render `ponysay -q twilight` with the built zipapp
+    pixi run smoke          # install into the pixi env and render `ponysay -q twilight`
 
-`pixi run sample-quote` depends on `build`, so the first invocation compiles
-everything and then renders the quote.  `pixi run quotes` is the narrow
-quote-data-only step if you only need to regenerate `quotes/`.
+`pixi run smoke` installs ponysay into `.pixi/envs/default` (passing
+`--without-shared-cache` so a non-root install does not try to create
+`/var/cache/ponysay`) and then runs the installed `ponysay -q twilight`.
+`pixi run quotes` is the narrow quote-data-only step if you only need to
+regenerate `quotes/`.
