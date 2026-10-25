@@ -22,13 +22,11 @@ broken.
 
 ## Pixi tasks
 
-Run these from the repository root:
+Run these from the repository root.
 
-```sh
-pixi run build
-```
+### `pixi run build`
 
-Builds ponysay in `ponysay/` with the path known to work:
+Builds ponysay in `ponysay/` with:
 
 ```sh
 python3 setup.py --freedom=partial --without-info --without-man --without-shell build
@@ -37,38 +35,49 @@ python3 setup.py --freedom=partial --without-info --without-man --without-shell 
 This compiles the quote data and produces the installable `ponysay.install`
 zipapp without requiring texinfo.
 
-```sh
-pixi run quotes
-```
+### `pixi run quotes`
 
 Compiles only the quote data: `ponysay/ponyquotes/*.<N>` →
 `ponysay/quotes/<group>.<N>`.  Use this when you only want to regenerate the
 compiled quotes.
 
-```sh
-pixi run smoke
-```
+### `pixi run install`
 
-Installs ponysay into `.pixi/envs/default` (passing `--without-shared-cache`
-so a non-root install does not try to create `/var/cache/ponysay`) and then
-runs:
+Installs ponysay into `.pixi/envs/default`.  The command is:
 
 ```sh
-ponysay -q twilight
+python3 setup.py --freedom=partial --without-info --without-man --without-shell --without-shared-cache --prefix "$PIXI_PROJECT_ROOT/.pixi/envs/default" install
 ```
 
-A successful run prints an emo `dear diary, ...` twilight quote.
+`setup.py install` performs the build itself, so this works from a clean
+checkout.  `--prefix` bakes the pixi environment's share directory into the
+generated zipapp; `--without-shared-cache` stops a non-root install from
+trying to create `/var/cache/ponysay`.
 
-## Running the installed binary directly
+### `pixi run ponysay ...`
 
-After `pixi run smoke` has installed it, invoke the installed binary through
-the pixi environment:
+Runs the installed ponysay.  The task depends on `install`, so it works from a
+clean checkout as well as after `pixi run smoke`; any arguments after the task
+name are passed to `ponysay`:
 
 ```sh
 pixi run ponysay -q twilight
+pixi run ponysay -l
 ```
 
-Or use the absolute path:
+`-q twilight` prints an emo `dear diary, ...` twilight quote; `-l` lists the
+installed ponies.
+
+### `pixi run smoke`
+
+Installs ponysay into `.pixi/envs/default` (via the `install` task) and then
+runs `ponysay -q twilight`.  A successful run prints an emo
+`dear diary, ...` twilight quote.
+
+## Running the installed binary directly
+
+After `pixi run install`, `pixi run ponysay ...`, or `pixi run smoke`, the
+installed binary can also be invoked by its absolute path:
 
 ```sh
 .pixi/envs/default/bin/ponysay -q twilight
@@ -77,7 +86,7 @@ Or use the absolute path:
 The installed `ponysay` is a zipapp with a `#!/usr/bin/env python3` shebang,
 so the absolute-path form needs a working `python3` on `PATH`.  If `python3`
 is not on `PATH` (for example, the broken sandbox shim), either prefer the
-`pixi run` form above, or put the pixi environment's `bin` first:
+`pixi run ponysay` task form above, or put the pixi environment's `bin` first:
 
 ```sh
 PATH="$PWD/.pixi/envs/default/bin:$PATH" .pixi/envs/default/bin/ponysay -q twilight

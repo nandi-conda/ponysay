@@ -30,7 +30,20 @@ build = "cd ponysay && python3 setup.py --freedom=partial --without-info --witho
 # reproducing the quote-compiler step of `setup.py build`.
 quotes = "cd ponysay && python3 ../scripts/compile-quotes.py"
 
-# Install into the pixi environment and render a sample emo quote.  Non-root
-# installs also pass `--without-shared-cache` so `setup.py install` does not
-# try to create `/var/cache/ponysay`.
-smoke = "cd ponysay && python3 setup.py --freedom=partial --without-info --without-man --without-shell --without-shared-cache --prefix \"$PIXI_PROJECT_ROOT/.pixi/envs/default\" install && \"$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/ponysay\" -q twilight"
+# Install ponysay into the pixi environment.  `setup.py install` performs the
+# build itself, so this task does not need an explicit `build` dependency.
+# `--prefix` is what bakes the pixi environment's share directory into the
+# generated zipapp (unlike `prebuilt`, which installs an already-built zipapp
+# whose data paths would still point at `/usr/share/ponysay`), and
+# `--without-shared-cache` keeps a non-root install from trying to create
+# `/var/cache/ponysay`.
+install = "cd ponysay && python3 setup.py --freedom=partial --without-info --without-man --without-shell --without-shared-cache --prefix \"$PIXI_PROJECT_ROOT/.pixi/envs/default\" install"
+
+# Run the installed ponysay with arbitrary arguments, e.g.
+# `pixi run ponysay -q twilight` or `pixi run ponysay -l`.  Depends on
+# `install` so it also works from a clean checkout.
+ponysay = { cmd = "\"$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/ponysay\"", depends-on = ["install"] }
+
+# Install into the pixi environment and render a sample emo quote.  This is a
+# smoke test for the `install` + `ponysay` tasks above.
+smoke = { cmd = "\"$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/ponysay\" -q twilight", depends-on = ["install"] }
