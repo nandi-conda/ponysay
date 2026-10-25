@@ -33,3 +33,23 @@ the quote compiler.  On systems without texinfo, build with:
 
     python3 setup.py --freedom=partial \
         --without-info --without-man --without-shell build
+
+## Using pixi
+
+The repository root has a [`pixi.toml`](../pixi.toml) manifest that pins a
+Python 3.13 environment plus the build/runtime tooling from conda-forge
+(`make`, `texinfo`, `gzip`, `coreutils`).  `texinfo` is only needed for the
+optional info manual; the quote compiler and the
+`--without-info --without-man --without-shell` build work without it.
+
+Install [pixi](https://pixi.sh) (e.g. `curl -fsSL https://pixi.sh/install.sh
+| bash`), then run the tasks from the repository root:
+
+    pixi run build          # python3 setup.py --freedom=partial \
+                            #     --without-info --without-man --without-shell build
+    pixi run quotes         # compile only ponyquotes/* -> quotes/*
+    pixi run sample-quote   # render `ponysay -q twilight` with the built zipapp
+
+`pixi run sample-quote` depends on `build`, so the first invocation compiles
+everything and then renders the quote.  `pixi run quotes` is the narrow
+quote-data-only step if you only need to regenerate `quotes/`.

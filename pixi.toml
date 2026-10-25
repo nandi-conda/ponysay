@@ -1,0 +1,38 @@
+# Pixi manifest for the emo-quote ponysay fork.
+#
+# The upstream ponysay checkout lives in `ponysay/`.  The build/run tasks below
+# all run from that directory.
+
+[workspace]
+name = "ponysay-emo-quotes"
+version = "0.1.0"
+description = "Emo-quote fork of ponysay, managed with pixi"
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+# The quote compiler and the `--without-info --without-man --without-shell`
+# build only need a Python 3 interpreter.  A full build of the optional info
+# manual additionally needs texinfo (`makeinfo`); the other packages here are
+# the build/runtime tooling named in ponysay's README (make, gzip, coreutils
+# for `stty`).
+[dependencies]
+python = "3.13.*"
+make = "*"
+texinfo = "*"
+gzip = "*"
+coreutils = "*"
+
+[tasks]
+
+# The full-safe build path: everything ponysay needs to run, without the
+# optional info/man/shell extras that require texinfo and friends.
+build = { cmd = "python3 setup.py --freedom=partial --without-info --without-man --without-shell build", cwd = "ponysay", description = "Build ponysay without the optional info/man/shell extras" }
+
+# Just compile the quote data (`ponyquotes/*.<N>` -> `quotes/<group>.<N>`),
+# exactly like the quote-compiler step in `setup.py build`.
+quotes = { cmd = "python3 ../scripts/compile-quotes.py", cwd = "ponysay", description = "Compile only the pony quote data" }
+
+# Render a sample emo quote.  `XDG_DATA_HOME` points at the repo root so the
+# built `ponysay.install` zipapp finds the checkout's `ponysay/ponies` and the
+# compiled `ponysay/quotes` data.
+sample-quote = { cmd = "XDG_DATA_HOME=\"$PIXI_PROJECT_ROOT\" python3 ponysay.install -q twilight", cwd = "ponysay", depends-on = ["build"], description = "Render a sample quote (`ponysay -q twilight`)" }
