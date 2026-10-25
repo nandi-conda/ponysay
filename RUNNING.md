@@ -74,5 +74,14 @@ Or use the absolute path:
 .pixi/envs/default/bin/ponysay -q twilight
 ```
 
+The installed `ponysay` is a zipapp with a `#!/usr/bin/env python3` shebang,
+so the absolute-path form needs a working `python3` on `PATH`.  If `python3`
+is not on `PATH` (for example, the broken sandbox shim), either prefer the
+`pixi run` form above, or put the pixi environment's `bin` first:
+
+```sh
+PATH="$PWD/.pixi/envs/default/bin:$PATH" .pixi/envs/default/bin/ponysay -q twilight
+```
+
 For other ponies, replace `twilight` with any name listed by
 `pixi run ponysay -l`.
