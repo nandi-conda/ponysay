@@ -177,66 +177,59 @@ def cell_to_subpixels(fg, bg, g):
 
 
 def transform_emo(grid):
+    '''
+    Turn the classic Twilight into the emo variant.
+
+    In the classic art the lavender tones 182/139/96 (#d7afd7/#af87af/#875f87)
+    are the pony's *coat*, and the mane/tail hair is the 60/61/54/97 blue-purple
+    family.  So the coat is left completely untouched and only the mane hair
+    (left of the tail, which starts around column 30) is darkened.  The pink
+    streak (205/169) is kept.
+
+    The mane is recoloured to dark navy #00005f (palette 17) rather than pure
+    black: that is the pony's real dark-blue mane family, it reads as a near
+    black emo mane, and -- unlike #000000 -- it does not end in a '0' hex byte,
+    so it does not trip backend.getColour()'s ']P...0' over-read (which would
+    otherwise truncate the tty art at 80 columns).  If getColour is fixed, pure
+    black (16) can be substituted here with no other changes.
+
+    On top of the recolour: a hair lock covers the far eye (one eye covered),
+    a choker band sits at the neck, and the legs get striped leg warmers.
+    '''
     g = [list(r) for r in grid]
-    MANE_MAP = {182: 53, 139: 54, 96: 16}
-    def keep(r, c):
-        if 16 <= r <= 29 and 13 <= c <= 31:
-            return True
-        if 30 <= r <= 44 and 18 <= c <= 31:
-            return True
-        return False
+
+    # Darken the mane hair left of the tail; keep the lavender coat untouched.
+    HAIR = {60: 17, 61: 17, 54: 17, 97: 17}
     for r in range(len(g)):
         for c in range(len(g[r])):
             v = g[r][c]
-            if v in (182, 139, 96) and not keep(r, c):
-                g[r][c] = MANE_MAP[v]
+            if v in (None, 'VAR'):
+                continue
+            if c < 30 and v in HAIR:
+                g[r][c] = HAIR[v]
 
-    # fringe over the far eye
-    for r in range(17, 21):
-        for c in range(13, 24):
-            if g[r][c] is not None:
-                g[r][c] = 53
-    for c in range(13, 24):
-        if g[21][c] is not None:
-            g[21][c] = 53
-    for c in (13, 14, 15):
-        g[21][c] = 16
+    # Fringe: a hair lock over the far eye (art rows 8-10, cols 12-14).
+    for ar in (8, 9, 10):
+        for c in (12, 13, 14):
+            for sr in (2 * ar, 2 * ar + 1):
+                if 0 <= sr < len(g) and g[sr][c] not in (None, 'VAR'):
+                    g[sr][c] = 17
 
-    # eyeliner + half-lid + under-eye shadow on the near eye
-    for c in range(24, 32):
-        if g[24][c] is not None:
-            g[24][c] = 16
-    for c in range(25, 32):
-        if g[25][c] is not None:
-            g[25][c] = 16
-    for c in range(25, 31):
-        if g[30][c] is not None:
-            g[30][c] = 16
-
-    # downturned wing
-    for r in (26, 27, 28):
-        if g[r][31] is not None:
-            g[r][31] = 16
-
-    # frown
-    for (r, c) in ((26, 16), (27, 16), (28, 17)):
-        if g[r][c] is not None:
-            g[r][c] = 16
-
-    # choker
+    # Choker at the neck.
     for c in range(12, 18):
-        if g[23][c] is not None:
-            g[23][c] = 16
+        if g[23][c] not in (None, 'VAR'):
+            g[23][c] = 17
 
-    # striped leg warmers
+    # Striped leg warmers.
     for c in range(20, 24):
         for r in (34, 35, 38, 39):
-            if g[r][c] is not None:
-                g[r][c] = 16
+            if g[r][c] not in (None, 'VAR'):
+                g[r][c] = 17
     for c in range(29, 32):
         for r in (34, 35, 38, 39):
-            if g[r][c] is not None:
-                g[r][c] = 16
+            if g[r][c] not in (None, 'VAR'):
+                g[r][c] = 17
+
     return g
 
 
