@@ -205,3 +205,34 @@ move the threshold and stays fragile; fix `getColour`.
 - Stale install: installed art is byte-identical to the repo.
 - The rendering pipeline: the classic pony proves it can render a good image,
   and the emo output matches its file exactly.
+
+## Addendum: t_b530b9d0's fix, navy vs black
+
+t_b530b9d0 implemented the art recipe on `thread/t_b530b9d0` (claimed commit
+8f44a5b, not present in the shared repo when I checked) with one deliberate
+change: the mane, fringe, choker and leg warmers use dark navy 17 (`#00005f`)
+instead of black 16 (`#000000`), because the `getColour` over-read above is
+still on main.
+
+I rebuilt that recipe from the classic art and checked it:
+
+- Histogram matches t_b530b9d0's report exactly: 182 = 194 (was 225), 139 = 48
+  (was 54), 96 = 36 (unchanged), 16 = 7 (pupils only). The 31 lost 182 and 6
+  lost 139 subpixels are the choker/leg-warmer/fringe overlays; the coat itself
+  is untouched.
+- The remaining 97 pixels are all in columns 30-35 (hind-leg/tail area), as
+  intended by the `< 30` rule.
+- Navy at 80 columns, real binary (temp install + candidate art):
+  both `TERM=xterm-256color` and `TERM=linux` output is byte-identical to
+  `PONYSAY_FULL_WIDTH=1`; max visible width 53; 0 truncated lines;
+  `Backend.len` max 72.
+- Black at 80 columns: xterm is fine, but the tty art truncates 9 lines
+  (max visible 50 of 53); `Backend.len` max 147 and 14 lines > 80.
+
+Recommendation: **keep navy 17.** It is the art's own darkest tone (the classic
+art uses `#00005f`, not `#000000`, for the outline), so the mane keeps a
+visible silhouette on black terminal backgrounds and no new palette value is
+introduced. The rendered navy mane reads as near-black and the lavender coat,
+pink streak, one-eye fringe, choker and striped legs all read correctly.
+Switching to 16 once `getColour` is fixed is width-safe, but I would still keep
+17 for the silhouette unless pure black is wanted specifically.
