@@ -91,12 +91,16 @@ Any arguments after the task name are passed through to `ponysay`:
 
 ```sh
 pixi run ponysay -q twilight
+pixi run ponysay -f twilight
 pixi run ponysay -l
 ```
 
 `-q twilight` prints an emo `dear diary, ...` twilight quote and renders the
 emo twilight art (black mane, fringe over one eye, eyeliner, choker and
-striped leg warmers); `-l` lists the installed ponies.
+striped leg warmers).  `-f twilight` renders the same art: when stdin is a
+terminal it picks a random twilight quote, and when stdin is piped it uses the
+piped text as the message (`echo hi | pixi run ponysay -f twilight`).  `-l`
+lists the installed ponies.
 
 ### `pixi run ponysay --emo`
 
