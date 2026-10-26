@@ -104,7 +104,7 @@ python3 scripts/make-emo-pony.py
 
 Installs ponysay into `.pixi/envs/default` (via the `install` task) and then
 runs `ponysay -q twilight`.  A successful run prints an emo
-`dear diary, ...` twilight quote.
+`dear diary, ...` twilight quote with the emo twilight artwork.
 
 ## Running the installed binary directly
 
