@@ -97,6 +97,21 @@ pixi run ponysay -l
 emo twilight art (black mane, fringe over one eye, eyeliner, choker and
 striped leg warmers); `-l` lists the installed ponies.
 
+### `pixi run ponysay --emo`
+
+Prints a random pony among those tagged `EMO: yes`, together with one of her
+quotes.  The wrapper translates `--emo` (short form `-e`) into
+`ponysay -r emo=yes -q`:
+
+```sh
+pixi run ponysay --emo
+```
+
+`twilight` is currently the only emo-tagged pony, so this renders the emo
+twilight art with a random `dear diary, ...` quote.  Arguments after `--emo`
+are still passed through to ponysay, for example `pixi run ponysay --emo -o`
+renders only the pony without a quote.
+
 ## Emo pony art
 
 The emo theme also extends to the artwork for Twilight Sparkle.  Both the

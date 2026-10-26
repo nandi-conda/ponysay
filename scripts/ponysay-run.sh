@@ -2,9 +2,10 @@
 # Wrapper for `pixi run ponysay`.
 #
 # `pixi run ponysay` with no arguments should print a random quote from a
-# random pony, i.e. behave like `ponysay -q`.  pixi appends any extra task
-# arguments after this command, so when arguments are present we pass them
-# through unchanged (for example `-q twilight` or `-l`).
+# random pony, i.e. behave like `ponysay -q`.  `--emo`/`-e` selects a random
+# emo-tagged pony and lets her quote herself (`ponysay -r emo=yes -q`).  pixi
+# appends any extra task arguments after this command, so when arguments are
+# present we pass them through unchanged (for example `-q twilight` or `-l`).
 set -eu
 
 if [ -n "${PIXI_PROJECT_ROOT:-}" ]; then
@@ -35,6 +36,25 @@ fi
 # The 2016-era zipapp triggers a SyntaxWarning for `\-` in balloon.py.
 # Suppress it so the quote is the only output.
 export PYTHONWARNINGS=ignore
+
+# `--emo` / `-e` is a wrapper-level flag, not a ponysay option: it selects a
+# random pony among those tagged `EMO: yes` (`-r emo=yes`) and lets her quote
+# herself (`-q`).  Only leading wrapper flags are consumed, so any following
+# ponysay arguments are passed through unchanged (e.g. `--emo -q twilight`).
+emo=0
+while [ "$#" -gt 0 ]; do
+    case $1 in
+        --emo|-e) emo=1; shift ;;
+        *) break ;;
+    esac
+done
+
+if [ "$emo" -eq 1 ]; then
+    if [ "$#" -eq 0 ]; then
+        exec "$PONYSAY" -r emo=yes -q
+    fi
+    exec "$PONYSAY" -r emo=yes "$@"
+fi
 
 if [ "$#" -eq 0 ]; then
     exec "$PONYSAY" -q
