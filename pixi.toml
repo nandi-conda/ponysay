@@ -42,9 +42,10 @@ install = "cd ponysay && python3 setup.py --freedom=partial --without-info --wit
 # Run the installed ponysay.  With no arguments this prints a random quote
 # from a random pony (`ponysay -q`).  `--emo` (or `-e`) restricts the choice
 # to the ponies tagged `EMO: yes` and prints one of their quotes
-# (`ponysay -r emo=yes -q`); pass-through arguments such as `-q twilight` or
-# `-l` work too.  The wrapper installs quietly on first use, so this does not
-# depend on the verbose `install` task and stays clean.
+# (`ponysay -r emo=yes -q`), and `--list-emo` prints the names of those
+# ponies, one per line, and exits 0.  Pass-through arguments such as
+# `-q twilight` or `-l` work too.  The wrapper installs quietly on first use,
+# so this does not depend on the verbose `install` task and stays clean.
 ponysay = "sh \"$PIXI_PROJECT_ROOT/scripts/ponysay-run.sh\""
 
 # Install into the pixi environment and render a sample emo quote.  This is a

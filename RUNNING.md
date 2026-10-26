@@ -120,7 +120,33 @@ pixi run ponysay --emo
 `twilight` is currently the only emo-tagged pony, so this renders the emo
 twilight art with a random `dear diary, ...` quote.  Arguments after `--emo`
 are still passed through to ponysay, for example `pixi run ponysay --emo -o`
-renders only the pony without a quote.
+renders only the pony without a quote.  Use `--list-emo` (below) to print the
+emo-tagged ponies.
+
+### `pixi run ponysay --list-emo`
+
+Prints the names of the ponies tagged `EMO: yes`, one per line, and exits 0:
+
+```sh
+pixi run ponysay --list-emo
+```
+
+Current output:
+
+```
+twilight
+```
+
+The wrapper reads the `EMO: yes` header from the installed pony files
+(`.pixi/envs/default/share/ponysay/ponies/*.pony`), falling back to
+`ponysay/ponies/*.pony` when the installed data is missing.  The output is
+plain text, sorted, and deterministic; ponies without an `EMO: yes` header are
+not listed, and if nothing matches the command prints nothing and still exits
+0.
+
+`--list-emo` is a wrapper-level flag because `-r` only affects random
+selection in core ponysay: `ponysay -l -r emo=yes` prints the same full list as
+`ponysay -l`.  `--list-emo` takes precedence over `--emo` when both are given.
 
 ## Emo pony art
 
