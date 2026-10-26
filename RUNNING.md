@@ -162,3 +162,67 @@ PATH="$PWD/.pixi/envs/default/bin:$PATH" .pixi/envs/default/bin/ponysay -q twili
 
 For other ponies, replace `twilight` with any name listed by
 `pixi run ponysay -l`.
+
+## Checking which Twilight art you are seeing
+
+Verified on a clean clone of `origin/main` (`e05dbbf`) with pixi 0.83.0:
+`pixi run ponysay -q twilight` renders the **emo** artwork.  The installed
+copy under `.pixi/envs/default/share/ponysay/ponies/twilight.pony` is
+byte-identical to the repo file (md5 `a3b1d64d3baf1842748c8bd58c73d905`),
+and both the xterm and TTY files carry `EMO: yes`.
+
+Visual markers:
+
+- **Emo**: dark plum/black mane; the fringe covers one eye (only one eye
+  visible); flat/downturned mouth; a black band across the neck (choker);
+  black horizontal bars across the legs (striped leg warmers).
+- **Classic**: light lilac mane and face; both eyes and a smile visible; no
+  choker; plain legs.
+- The magenta mane streak is **not** a useful marker: both art files have it.
+
+Command-line tells:
+
+```sh
+pixi run ponysay -l          # lists both `twilight` and `twilightclassic`;
+                             # bold = pony has quotes, twilightclassic is plain
+grep '^EMO' ponysay/ponies/twilight.pony ponysay/ttyponies/twilight.pony
+pixi run ponysay -q twilightclassic   # classic art + fallback quote
+                                      # "Zecora! Help me, I am mute!"
+```
+
+`twilightclassic` has no quote file, so `-q twilightclassic` prints the
+built-in fallback quote.  `pixi run ponysay -f twilightclassic -q` prints the
+classic art with an **empty** balloon: `-q` at the end takes no pony
+argument, so the message is read from stdin (empty in a non-interactive run).
+
+The `-r` restriction must come **before** `-q`.  `-q` takes the pony name as
+its argument, so `ponysay -q -r emo=yes` treats `-r` as the pony name and
+`emo=yes` as the message.  With `PONYSAY_TYPO_LIMIT=0` that fails with
+`I have never heard of anypony named -r` (exit 252); with the default typo
+correction it quietly renders some other pony (observed `tom`, `cow`, `joe`
+and `zecora`).  Use:
+
+```sh
+pixi run ponysay -r emo=yes -q     # emo twilight, always
+pixi run ponysay --emo             # same, via the wrapper
+```
+
+### Stale installs
+
+`scripts/ponysay-run.sh` installs ponysay only when
+`.pixi/envs/default/bin/ponysay` is missing.  It never refreshes the data
+files, so a `.pixi/` created before the emo art landed keeps rendering the
+old classic art even though `ponysay/ponies/twilight.pony` has `EMO: yes`.
+This is reproducible by copying `twilightclassic.pony` over the installed
+`twilight.pony`: `pixi run ponysay -q twilight` then renders the classic art
+with no warning.  Run `pixi run install` (or remove `.pixi/`) to refresh;
+after that the installed copy matches the repo file again.  `.pixi/` is
+gitignored, so a fresh checkout is never stale.
+
+### Merge status
+
+The emo art is on `main`: commit `10e1701` ("Add emo Twilight Sparkle art
+alongside classic original") is an ancestor of `main` (verified at
+`e05dbbf`).  There is no separate emo branch and no unmerged commit
+(`git log --all --not main` is empty).  `twilightclassic.pony` is
+byte-identical to the pre-emo `twilight.pony`.
