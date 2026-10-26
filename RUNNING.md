@@ -96,11 +96,11 @@ pixi run ponysay -l
 ```
 
 `-q twilight` prints an emo `dear diary, ...` twilight quote and renders the
-emo twilight art (black mane, fringe over one eye, eyeliner, choker and
-striped leg warmers).  `-f twilight` renders the same art: when stdin is a
-terminal it picks a random twilight quote, and when stdin is piped it uses the
-piped text as the message (`echo hi | pixi run ponysay -f twilight`).  `-l`
-lists the installed ponies.
+emo twilight art (lavender coat, dark navy mane, hair lock over one eye,
+choker and striped leg warmers).  `-f twilight` renders the same art: when
+stdin is a terminal it picks a random twilight quote, and when stdin is piped
+it uses the piped text as the message (`echo hi | pixi run ponysay -f
+twilight`).  `-l` lists the installed ponies.
 
 `pixi run ponysay -h` prints the help (`+h` forces colours when piped).  Help
 and `-l` output use bold and colour for headings and option names; only the
@@ -152,11 +152,13 @@ selection in core ponysay: `ponysay -l -r emo=yes` prints the same full list as
 
 The emo theme also extends to the artwork for Twilight Sparkle.  Both the
 xterm art (`ponysay/ponies/twilight.pony`) and the Linux-VT art
-(`ponysay/ttyponies/twilight.pony`) render an emo Twilight: black mane with a
-magenta streak, a fringe covering one eye, eyeliner with an under-eye shadow,
-a downturned mouth, a black choker and striped leg warmers.  The `EMO: yes`
-metadata tag is set on these files, so they are selectable with
-`ponysay -r emo=yes`.
+(`ponysay/ttyponies/twilight.pony`) render an emo Twilight: the lavender
+coat/face is preserved, the mane is dark navy (`#00005f`) with the
+magenta/pink streak, the tail stays blue-grey with pink, a swept hair lock
+covers the far eye, the mouth is a subtle frown, and a dark navy choker and
+striped leg warmers are added.  Except for the eye pupil, the art uses no
+pure black.  The `EMO: yes` metadata tag is set on these files, so they are
+selectable with `ponysay -r emo=yes`.
 
 The original (classic) art is kept intact alongside the emo art as
 `twilightclassic`; render it with:
@@ -201,20 +203,29 @@ For other ponies, replace `twilight` with any name listed by
 
 ## Checking which Twilight art you are seeing
 
-Verified on a clean clone of `origin/main` (`e05dbbf`) with pixi 0.83.0:
-`pixi run ponysay -q twilight` renders the **emo** artwork.  The installed
-copy under `.pixi/envs/default/share/ponysay/ponies/twilight.pony` is
-byte-identical to the repo file (md5 `a3b1d64d3baf1842748c8bd58c73d905`),
-and both the xterm and TTY files carry `EMO: yes`.
+Verified on a clean clone of `main` (`63bff1a`) with pixi 0.83.0:
+`pixi run ponysay -q twilight` and `pixi run ponysay --emo` render the
+**emo** artwork, and the installed copies under
+`.pixi/envs/default/share/ponysay/` are byte-identical to the repo files
+(xterm md5 `6559f8f83b6686e0368a242facdcf511`, TTY md5
+`47aee3c2f285ad3608f733196b005bc6`).  Both files carry `EMO: yes`.
 
 Visual markers:
 
-- **Emo**: dark plum/black mane; the fringe covers one eye (only one eye
-  visible); flat/downturned mouth; a black band across the neck (choker);
-  black horizontal bars across the legs (striped leg warmers).
+- **Emo**: lavender coat and face (same as classic); dark navy mane
+  (`#00005f`) with the magenta/pink streak; a swept hair lock covers the far
+  eye (only one eye visible); subtle frown; dark navy choker at the neck;
+  dark navy horizontal bars across the legs (striped leg warmers).  The art
+  uses no pure black except the eye pupil.
 - **Classic**: light lilac mane and face; both eyes and a smile visible; no
   choker; plain legs.
 - The magenta mane streak is **not** a useful marker: both art files have it.
+- Both xterm and TTY art render fully at 80 columns.  In particular,
+  `pixi run ponysay -f twilight -o -V` is identical to
+  `PONYSAY_FULL_WIDTH=1`; the TTY renderer's KMS-palette width bug
+  (`Backend.getColour` over-reads `]P...0` defs) does not trigger because
+  the art uses black only for the eye pupil.  Art with large pure-black
+  areas would still be truncated at 80 columns.
 
 Command-line tells:
 
@@ -264,9 +275,10 @@ keeps rendering the classic art until you run `pixi run install` (or remove
 ### Merge status
 
 The emo art is on `main`: commit `10e1701` ("Add emo Twilight Sparkle art
-alongside classic original") is an ancestor of `main`.  All
+alongside classic original") is an ancestor of `main`; the current art is the
+`63bff1a` redesign (lavender coat, dark navy mane).  All
 `origin/thread/*` topic branches are contained in `main`; there is no
 separate emo branch.  The only refs ahead of `main` are harness session and
 snapshot refs (`origin-sessions/*`, `origin-snapshots/*`), so
 `git log --all --not main` shows snapshots, not unmerged work.
-`twilightclassic.pony` is byte-identical to the pre-emo `twilight.pony`.
+The classic xterm and TTY files are byte-identical to the pre-emo originals.
