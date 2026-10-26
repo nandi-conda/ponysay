@@ -1,31 +1,35 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
-Regenerate the emo pony art for Twilight Sparkle.
+Regenerate the emo pony art.
 
 The emo theme originally only covered the quotes (ponysay/ponyquotes/).  This
 script extends it to the artwork by producing, from the untouched classic
-originals:
+originals, for each pony in `PONIES`:
 
-  * ponysay/ponies/twilight.pony       (xterm, 256-colour)
-  * ponysay/ttyponies/twilight.pony    (Linux VT, 16-colour palette)
+  * ponysay/ponies/<pony>.pony       (xterm, 256-colour)
+  * ponysay/ttyponies/<pony>.pony    (Linux VT, 16-colour palette)
 
-The classic originals are kept side by side as `twilightclassic.pony`.
+The classic originals are kept side by side as `<pony>classic.pony`.  Those
+files are plain copies of the upstream art and are never written by this
+script.
 
-The transformation is:
-  * recolor the lavender mane (#d7afd7/#af87af/#875f87) to a dark plum/purple
-    palette (#5f005f/#5f0087/#000000) while leaving the lavender face/coat
-    highlights intact;
-  * sweep a fringe over the far eye;
-  * add black eyeliner, a half-lid and an under-eye shadow to the near eye;
-  * add a downturned mouth and a black choker;
-  * add striped leg warmers.
+The transformation keeps the coat colours intact and:
+  * recolors only the mane/hair tones to dark navy #00005f (palette 17):
+    near-black, but not #000000, because Backend.getColour's `]P...0`
+    over-read mismeasures pure-black KMS palette definitions and would
+    truncate the TTY art at 80 columns;
+  * sweeps a hair lock over one eye;
+  * adds a navy choker at the neck;
+  * adds two navy stripes per leg as leg warmers.
 
 Run from the repository root:
 
-    python3 scripts/make-emo-pony.py
+    python3 scripts/make-emo-pony.py [pony ...]
 
-It is idempotent: it reads the classic files, never the generated emo files.
+With no arguments every pony in `PONIES` is regenerated.  It is idempotent:
+it reads the classic files, never the generated emo files, and re-running it
+produces byte-identical output.
 '''
 import re
 import sys
@@ -92,6 +96,10 @@ RGB_TO_256 = {
     '5F5FAF': 61, '875F87': 96, '875FAF': 97, 'AF87AF': 139, 'D75FAF': 169,
     'D7AFD7': 182, 'FF5FAF': 205, 'FFFFFF': 231, '303030': 236, '585858': 240,
     '606060': 241, '121212': 233, '262626': 235,
+    # Palette entries used by the 16-colour TTY art of other ponies
+    # (Fluttershy's pink mane and yellow coat).
+    'D787AF': 175, 'FFAFD7': 218, 'FFD787': 222, 'D7AF00': 178,
+    'FFFF87': 228, '00AFAF': 37, '5FAFAF': 73,
 }
 C256_TO_RGB = {v: k for k, v in RGB_TO_256.items()}
 
@@ -113,7 +121,12 @@ def parse_tty_art(art):
             h = palette.get(idx)
             if h is None or h.upper() in ('AAAAAA', 'C0C0C0'):
                 return None
-            return RGB_TO_256.get(h.upper(), None)
+            h = h.upper()
+            # Undo the visually-invisible blue-nibble nudge the TTY writer
+            # applies to colors whose hex ends in '0' (see kms_hex).
+            if h in ('000001', 'D7AF01'):
+                h = h[:-1] + '0'
+            return RGB_TO_256.get(h, None)
         while i < n:
             c = ln[i]
             if c == '\x1b':
@@ -176,59 +189,100 @@ def cell_to_subpixels(fg, bg, g):
     return (None, None)
 
 
-def transform_emo(grid):
+# Emo palette entry: dark navy #00005f.  Deliberately not pure black: the
+# TTY renderer's Backend.getColour over-reads KMS palette definitions whose
+# last hex digit is '0', which mismeasures and truncates such art at 80
+# columns.  #00005f ends in 'F' and is safe.
+NAVY = 17
+
+# Per-pony emo recipes.  All coordinates are subpixels (two per text row) and
+# text columns, matching the parsed grids.
+#
+# `hair` is the set of palette entries that make up the mane/tail.  The coat
+# palette is deliberately absent, so the coat colours survive untouched.
+# `hair_before_col` limits the recolor to columns left of that number; it is
+# used for Twilight, whose tail keeps its original blue-grey/pink colours
+# while only the mane is darkened.  Fluttershy's mane and tail are the same
+# pink, so all of her hair is darkened.
+#
+# `fringe`, `choker` and `legwarmers` are inclusive (row0, row1, col0, col1)
+# rectangles painted in NAVY.  They only paint existing art pixels, never
+# background, so the silhouette does not grow.
+PONIES = {
+    'twilight': {
+        'emo_name': 'Twilight Sparkle (emo)',
+        # The top art row (line 3) is left verbatim, as it always was.
+        'first_line': 4,
+        'hair': (60, 61, 54, 97),
+        'hair_before_col': 30,
+        # Hair lock over the far eye (text rows 8-10, columns 12-14).
+        'fringe': [(16, 21, 12, 14)],
+        'choker': [(23, 23, 12, 17)],
+        'legwarmers': [
+            (34, 35, 20, 23), (38, 39, 20, 23),
+            (34, 35, 29, 31), (38, 39, 29, 31),
+        ],
+    },
+    'fluttershy': {
+        'emo_name': 'Fluttershy (emo)',
+        # Lines 0-3 are the balloon and its three tail markers; art starts at
+        # line 4.
+        'first_line': 4,
+        # Pink mane and tail (218 #ffafd7, 175 #d787af); the yellow coat
+        # (228/178) and its pale highlight (222) are not touched.
+        'hair': (218, 175),
+        'hair_before_col': None,
+        # The classic TTY art defines #d7af00 (coat shade) and #000000
+        # (pupil); both end in '0' and trip the renderer's over-read.
+        'avoid_kms_overread': True,
+        # Side-swept fringe: a diagonal lock from the top of the head over the
+        # right side of the face, plus a short lock over the top of the near
+        # eye.  The far eye is already hidden behind the mane.
+        'fringe': [
+            (12, 13, 15, 17), (13, 14, 16, 18), (14, 15, 17, 19),
+            (15, 16, 18, 20), (16, 17, 19, 21), (17, 18, 20, 22),
+            (18, 19, 21, 23),
+            (14, 15, 15, 18), (16, 16, 17, 18),
+        ],
+        # Navy choker across the visible base of the neck.
+        'choker': [(26, 27, 25, 30)],
+        # Two stripes per leg; the coat colour between them makes the banding.
+        'legwarmers': [
+            (38, 39, 23, 27), (42, 43, 23, 27),
+            (38, 39, 31, 35), (42, 43, 31, 35),
+            (42, 43, 18, 21),
+        ],
+    },
+}
+
+
+def transform_emo(grid, spec):
     '''
-    Turn the classic Twilight into the emo variant.
+    Turn a classic pony into its emo variant using a `PONIES` recipe.
 
-    In the classic art the lavender tones 182/139/96 (#d7afd7/#af87af/#875f87)
-    are the pony's *coat*, and the mane/tail hair is the 60/61/54/97 blue-purple
-    family.  So the coat is left completely untouched and only the mane hair
-    (left of the tail, which starts around column 30) is darkened.  The pink
-    streak (205/169) is kept.
-
-    The mane is recoloured to dark navy #00005f (palette 17) rather than pure
-    black: that is the pony's real dark-blue mane family, it reads as a near
-    black emo mane, and -- unlike #000000 -- it does not end in a '0' hex byte,
-    so it does not trip backend.getColour()'s ']P...0' over-read (which would
-    otherwise truncate the tty art at 80 columns).  If getColour is fixed, pure
-    black (16) can be substituted here with no other changes.
-
-    On top of the recolour: a hair lock covers the far eye (one eye covered),
-    a choker band sits at the neck, and the legs get striped leg warmers.
+    Only the recipe's `hair` palette entries are recolored (to NAVY), so the
+    coat colours are preserved.  The fringe, choker and leg-warmer rectangles
+    are then painted over existing art pixels only.
     '''
     g = [list(r) for r in grid]
+    hair = set(spec['hair'])
+    limit = spec['hair_before_col']
 
-    # Darken the mane hair left of the tail; keep the lavender coat untouched.
-    HAIR = {60: 17, 61: 17, 54: 17, 97: 17}
     for r in range(len(g)):
         for c in range(len(g[r])):
             v = g[r][c]
-            if v in (None, 'VAR'):
+            if v in (None, 'VAR') or v not in hair:
                 continue
-            if c < 30 and v in HAIR:
-                g[r][c] = HAIR[v]
+            if limit is None or c < limit:
+                g[r][c] = NAVY
 
-    # Fringe: a hair lock over the far eye (art rows 8-10, cols 12-14).
-    for ar in (8, 9, 10):
-        for c in (12, 13, 14):
-            for sr in (2 * ar, 2 * ar + 1):
-                if 0 <= sr < len(g) and g[sr][c] not in (None, 'VAR'):
-                    g[sr][c] = 17
-
-    # Choker at the neck.
-    for c in range(12, 18):
-        if g[23][c] not in (None, 'VAR'):
-            g[23][c] = 17
-
-    # Striped leg warmers.
-    for c in range(20, 24):
-        for r in (34, 35, 38, 39):
-            if g[r][c] not in (None, 'VAR'):
-                g[r][c] = 17
-    for c in range(29, 32):
-        for r in (34, 35, 38, 39):
-            if g[r][c] not in (None, 'VAR'):
-                g[r][c] = 17
+    for key in ('fringe', 'choker', 'legwarmers'):
+        for (r0, r1, c0, c1) in spec[key]:
+            for r in range(r0, r1 + 1):
+                for c in range(c0, c1 + 1):
+                    if 0 <= r < len(g) and 0 <= c < len(g[r]):
+                        if g[r][c] not in (None, 'VAR'):
+                            g[r][c] = NAVY
 
     return g
 
@@ -272,7 +326,18 @@ def grid_to_xterm_lines(grid):
     return lines
 
 
-def grid_to_tty_lines(grid):
+def grid_to_tty_lines(grid, safe_kms=False):
+    def kms_hex(idx):
+        # Backend.getColour reads one character too many when the last hex
+        # digit of a `]P...` palette definition is '0'.  The stray read makes
+        # the renderer over-count the line and truncate it at 80 columns.
+        # Nudging the blue nibble by one is visually invisible and keeps the
+        # definition parseable.
+        h = C256_TO_RGB[idx]
+        if safe_kms and h.endswith('0'):
+            h = h[:-1] + '1'
+        return h
+
     lines = []
     for i in range(0, len(grid) - 1, 2):
         top = grid[i]
@@ -298,12 +363,12 @@ def grid_to_tty_lines(grid):
             if key != last:
                 params = []
                 if fg is not None:
-                    out += '\x1b]P8' + C256_TO_RGB[fg]
+                    out += '\x1b]P8' + kms_hex(fg)
                     params.append('30;01')
                 else:
                     params.append('39')
                 if bg is not None:
-                    out += '\x1b]P0' + C256_TO_RGB[bg]
+                    out += '\x1b]P0' + kms_hex(bg)
                     params.append('40')
                 else:
                     params.append('49')
@@ -322,12 +387,12 @@ def split_pony(path):
     return data[4:end], (data[end + 5:]).split('\n')
 
 
-def emo_meta(meta):
+def emo_meta(meta, emo_name):
     out = []
     inserted = False
     for ln in meta.split('\n'):
         if ln.startswith('NAME:'):
-            out.append('NAME: Twilight Sparkle (emo)')
+            out.append('NAME: ' + emo_name)
         else:
             out.append(ln)
         if 'EYE:' in ln and not inserted:
@@ -336,21 +401,37 @@ def emo_meta(meta):
     return '\n'.join(out)
 
 
-def make_emo(pony='twilight'):
+def make_emo(pony, spec):
     classic_name = pony + 'classic'
+    first = spec['first_line']
     for kind in ('xterm', 'tty'):
         sub = 'ponies' if kind == 'xterm' else 'ttyponies'
         src = '%s/ponysay/%s/%s.pony' % (ROOT, sub, classic_name)
         meta, art_lines = split_pony(src)
         grid = (parse_xterm_art if kind == 'xterm' else parse_tty_art)('\n'.join(art_lines))
-        g = transform_emo(grid)
-        ser = (grid_to_xterm_lines if kind == 'xterm' else grid_to_tty_lines)(g[8:48])
-        new_lines = art_lines[0:4] + ser + [art_lines[24]]
-        content = '$$$\n' + emo_meta(meta) + '\n$$$\n' + '\n'.join(new_lines)
+        g = transform_emo(grid, spec)
+        start = 2 * first
+        stop = 2 * (len(art_lines) - 1)
+        if kind == 'xterm':
+            ser = grid_to_xterm_lines(g[start:stop])
+        else:
+            ser = grid_to_tty_lines(g[start:stop], safe_kms=spec.get('avoid_kms_overread', False))
+        new_lines = art_lines[0:first] + ser + [art_lines[-1]]
+        content = '$$$\n' + emo_meta(meta, spec['emo_name']) + '\n$$$\n' + '\n'.join(new_lines)
         dest = '%s/ponysay/%s/%s.pony' % (ROOT, sub, pony)
         open(dest, 'w').write(content)
         print('wrote %s (%d bytes)' % (dest, len(content)))
 
 
+def main(argv):
+    names = argv[1:]
+    if not names:
+        names = list(PONIES)
+    for pony in names:
+        if pony not in PONIES:
+            raise SystemExit('unknown pony: %s (known: %s)' % (pony, ', '.join(sorted(PONIES))))
+        make_emo(pony, PONIES[pony])
+
+
 if __name__ == '__main__':
-    make_emo()
+    main(sys.argv)
