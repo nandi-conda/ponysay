@@ -102,6 +102,11 @@ terminal it picks a random twilight quote, and when stdin is piped it uses the
 piped text as the message (`echo hi | pixi run ponysay -f twilight`).  `-l`
 lists the installed ponies.
 
+`pixi run ponysay -h` prints the help (`+h` forces colours when piped).  Help
+and `-l` output use bold and colour for headings and option names; only the
+option arguments in the help synopsis are underlined, so no stray underline
+is left on the following text.
+
 ### `pixi run ponysay --emo`
 
 Prints a random pony among those tagged `EMO: yes`, together with one of her
