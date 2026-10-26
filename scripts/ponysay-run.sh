@@ -16,11 +16,13 @@ fi
 
 PONYSAY="$ROOT/.pixi/envs/default/bin/ponysay"
 
-# Install quietly on first use.  The task itself deliberately does not depend
-# on the `install` task, because that would run the full setup.py install
-# output before every quote.  The install command is the same one used by
-# `pixi run install` and `pixi run smoke`.
-if [ ! -x "$PONYSAY" ]; then
+# Install quietly on first use, and again whenever the installed binary is
+# older than the source tree (for example after a quote or pony-art change),
+# so a pre-existing environment never serves stale data.  The task itself
+# deliberately does not depend on the `install` task, because that would run
+# the full setup.py install output before every quote.  The install command is
+# the same one used by `pixi run install` and `pixi run smoke`.
+if [ ! -x "$PONYSAY" ] || [ -n "$(find "$ROOT/ponysay" -type f -newer "$PONYSAY" -print -quit 2>/dev/null)" ]; then
     LOG="${TMPDIR:-/tmp}/ponysay-install.$$.log"
     if ! (cd "$ROOT/ponysay" && python3 setup.py \
             --freedom=partial --without-info --without-man --without-shell \

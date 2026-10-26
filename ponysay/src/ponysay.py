@@ -957,7 +957,12 @@ class Ponysay():
                 if endswith(pony, '.pony'):
                     extra.append(ponydir + pony)
         both = standard + extra
-        for (opt, ponies, quotes) in [('-f', standard, False), ('+f', extra, False), ('-F', both, False), ('-q', standard, True)]: ## TODO +q -Q
+        ## If a pony selector is given without a message and stdin is an
+        ## interactive terminal, use a random quote instead of blocking on
+        ## stdin.  Piped input still comes through stdin (`pipelinein` is
+        ## True then), and `-q` already forces quotes.
+        usequote = (args.message is None) and (not self.pipelinein)
+        for (opt, ponies, quotes) in [('-f', standard, usequote), ('+f', extra, usequote), ('-F', both, usequote), ('-q', standard, True)]: ## TODO +q -Q
             if args.opts[opt] is not None:
                 for pony in args.opts[opt]:
                     selection.append((pony, ponies, quotes))
