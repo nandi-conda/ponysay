@@ -206,28 +206,43 @@ move the threshold and stays fragile; fix `getColour`.
 - The rendering pipeline: the classic pony proves it can render a good image,
   and the emo output matches its file exactly.
 
-## Addendum: t_b530b9d0's fix, navy vs black
+## Addendum: t_b530b9d0's fix, navy vs black (landed and verified)
 
-t_b530b9d0 implemented the art recipe on `thread/t_b530b9d0` (claimed commit
-8f44a5b, not present in the shared repo when I checked) with one deliberate
-change: the mane, fringe, choker and leg warmers use dark navy 17 (`#00005f`)
-instead of black 16 (`#000000`), because the `getColour` over-read above is
-still on main.
+t_b530b9d0 implemented the art recipe; it landed on main as **63bff1a** ("Fix
+emo Twilight art: preserve lavender coat, darken mane only"), with one
+deliberate change: the mane, fringe, choker and leg warmers use dark navy 17
+(`#00005f`) instead of black 16 (`#000000`), because the `getColour` over-read
+above is still on main.
 
-I rebuilt that recipe from the classic art and checked it:
+The committed transform (`transform_emo`): leave 182/139/96 untouched; map the
+hair colors 60/61/54/97 to 17 for columns < 30; fringe lock over art rows 8-10
+cols 12-14; choker at subpixel row 23 cols 12-17; leg warmers at rows
+34/35/38/39 cols 20-23 and 29-31; the old fringe/eyeliner/wing rectangles are
+gone.
 
-- Histogram matches t_b530b9d0's report exactly: 182 = 194 (was 225), 139 = 48
-  (was 54), 96 = 36 (unchanged), 16 = 7 (pupils only). The 31 lost 182 and 6
-  lost 139 subpixels are the choker/leg-warmer/fringe overlays; the coat itself
-  is untouched.
-- The remaining 97 pixels are all in columns 30-35 (hind-leg/tail area), as
-  intended by the `< 30` rule.
-- Navy at 80 columns, real binary (temp install + candidate art):
-  both `TERM=xterm-256color` and `TERM=linux` output is byte-identical to
-  `PONYSAY_FULL_WIDTH=1`; max visible width 53; 0 truncated lines;
-  `Backend.len` max 72.
-- Black at 80 columns: xterm is fine, but the tty art truncates 9 lines
-  (max visible 50 of 53); `Backend.len` max 147 and 14 lines > 80.
+Verified from a clean `git archive origin/main` tree (not from a scratch
+reproduction), with the wrapper installing into a temp prefix:
+
+- md5s match t_b530b9d0's report: emo xterm `6559f8f83b6686e0368a242facdcf511`,
+  emo tty `47aee3c2f285ad3608f733196b005bc6`; classics unchanged at
+  `a46179ba979b5d691c1fb1d891eb1a38` / `a83ced2a590fcbfdc56c966a6bdab70a`,
+  equal to the pre-emo originals at 10e1701^.
+- Re-running `scripts/make-emo-pony.py` leaves all four art files unchanged
+  (idempotent).
+- `pixi run ponysay` paths (wrapper with `PIXI_PROJECT_ROOT`): `-q twilight`,
+  `--emo` and `-f twilightclassic` all exit 0; the emo render matches the art
+  file with 0/2650 subpixel differences.
+- Histogram from the committed files: 182 = 194, 139 = 48, 96 = 36, 16 = 7
+  (pupils only), identical for xterm and tty; the remaining 97 pixels are all
+  in columns 30-35 (hind-leg/tail area), as intended by the `< 30` rule. The 31
+  lost 182 and 6 lost 139 subpixels are the choker/leg-warmer/fringe overlays;
+  the coat itself is untouched.
+- Width at 80 columns, real binary: `TERM=xterm-256color` and `TERM=linux`
+  (including `-o -V`) are byte-identical to `PONYSAY_FULL_WIDTH=1`, max visible
+  53, 0 truncated lines. Classic tty/ xterm unchanged. For comparison, pure
+  black would still truncate 9 tty lines (max visible 50 of 53; `Backend.len`
+  max 147 and 14 lines > 80), and `Backend.getColour` on main still has the
+  over-read (src/backend.py:411-418).
 
 Recommendation: **keep navy 17.** It is the art's own darkest tone (the classic
 art uses `#00005f`, not `#000000`, for the outline), so the mane keeps a
