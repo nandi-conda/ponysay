@@ -501,7 +501,7 @@ class Ponysay():
         @param   args:ArgParser                                 Parsed command line arguments
         @return  (name, dirfile, quote):(str, list<str>, bool)  The pony name, pony file with the directory, and whether to use ponyquotes
         '''
-        quote    =  args.opts['-q'] is not None ## TODO +q -Q
+        quote    =  (args.opts['-q'] is not None) or self.__preferQuote(args) ## TODO +q -Q
         standard = (args.opts['-f'] is not None) or (args.opts['-F'] is not None) or (args.opts['-q'] is not None) ## TODO -Q
         extra    = (args.opts['+f'] is not None) or (args.opts['-F'] is not None) ## TODO +q -Q
         if not (standard or extra):
@@ -957,15 +957,29 @@ class Ponysay():
                 if endswith(pony, '.pony'):
                     extra.append(ponydir + pony)
         both = standard + extra
-        ## If a pony selector is given without a message and stdin is an
-        ## interactive terminal, use a random quote instead of blocking on
-        ## stdin.  Piped input still comes through stdin (`pipelinein` is
-        ## True then), and `-q` already forces quotes.
-        usequote = (args.message is None) and (not self.pipelinein)
+        ## If a pony is selected without a message and stdin is an interactive
+        ## terminal, use a random quote instead of blocking on stdin.  Piped
+        ## input still comes through stdin (`pipelinein` is True then), and
+        ## `-q` already forces quotes.
+        usequote = self.__preferQuote(args)
         for (opt, ponies, quotes) in [('-f', standard, usequote), ('+f', extra, usequote), ('-F', both, usequote), ('-q', standard, True)]: ## TODO +q -Q
             if args.opts[opt] is not None:
                 for pony in args.opts[opt]:
                     selection.append((pony, ponies, quotes))
+    
+    
+    def __preferQuote(self, args):
+        '''
+        Whether to use a random quote instead of reading a message from stdin.
+        
+        This is the case when no message argument is given and stdin is an
+        interactive terminal: reading stdin would then block waiting for EOF
+        instead of rendering the pony.
+        
+        @param   args:ArgParser  Command line options
+        @return  :bool           Whether to prefer a quote
+        '''
+        return (args.message is None) and (not self.pipelinein)
     
     
     def __getMessage(self, args, quote):
