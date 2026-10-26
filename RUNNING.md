@@ -1,9 +1,10 @@
 # How to run
 
-This repository is a ponysay fork with emo `dear diary, ...` quotes and an
-emo-styled Twilight Sparkle artwork.  The build/run workflow is managed by
-[pixi](https://pixi.sh); the manifest is [`pixi.toml`](pixi.toml) at the repo
-root and the pinned lockfile is [`pixi.lock`](pixi.lock).
+This repository is a ponysay fork with emo `dear diary, ...` quotes and
+emo-styled artwork for Twilight Sparkle and Fluttershy.  The build/run
+workflow is managed by [pixi](https://pixi.sh); the manifest is
+[`pixi.toml`](pixi.toml) at the repo root and the pinned lockfile is
+[`pixi.lock`](pixi.lock).
 
 ## Prerequisites
 
@@ -97,7 +98,8 @@ pixi run ponysay -l
 
 `-q twilight` prints an emo `dear diary, ...` twilight quote and renders the
 emo twilight art (lavender coat, dark navy mane, hair lock over one eye,
-choker and striped leg warmers).  `-f twilight` renders the same art: when
+choker and striped leg warmers).  `-q fluttershy` does the same for the emo
+fluttershy art.  `-f twilight` renders the same art: when
 stdin is a terminal it picks a random twilight quote, and when stdin is piped
 it uses the piped text as the message (`echo hi | pixi run ponysay -f
 twilight`).  `-l` lists the installed ponies.
@@ -117,11 +119,11 @@ quotes.  The wrapper translates `--emo` (short form `-e`) into
 pixi run ponysay --emo
 ```
 
-`twilight` is currently the only emo-tagged pony, so this renders the emo
-twilight art with a random `dear diary, ...` quote.  Arguments after `--emo`
-are still passed through to ponysay, for example `pixi run ponysay --emo -o`
-renders only the pony without a quote.  Use `--list-emo` (below) to print the
-emo-tagged ponies.
+`twilight` and `fluttershy` are the emo-tagged ponies, so this picks one of
+the two at random and renders her emo art with a random `dear diary, ...`
+quote.  Arguments after `--emo` are still passed through to ponysay, for
+example `pixi run ponysay --emo -o` renders only the pony without a quote.
+Use `--list-emo` (below) to print the emo-tagged ponies.
 
 ### `pixi run ponysay --list-emo`
 
@@ -134,6 +136,7 @@ pixi run ponysay --list-emo
 Current output:
 
 ```
+fluttershy
 twilight
 ```
 
@@ -148,37 +151,55 @@ not listed, and if nothing matches the command prints nothing and still exits
 selection in core ponysay: `ponysay -l -r emo=yes` prints the same full list as
 `ponysay -l`.  `--list-emo` takes precedence over `--emo` when both are given.
 
-## Emo pony art
-
-The emo theme also extends to the artwork for Twilight Sparkle.  Both the
-xterm art (`ponysay/ponies/twilight.pony`) and the Linux-VT art
-(`ponysay/ttyponies/twilight.pony`) render an emo Twilight: the lavender
-coat/face is preserved, the mane is dark navy (`#00005f`) with the
-magenta/pink streak, the tail stays blue-grey with pink, a swept hair lock
-covers the far eye, the mouth is a subtle frown, and a dark navy choker and
-striped leg warmers are added.  Except for the eye pupil, the art uses no
-pure black.  The `EMO: yes` metadata tag is set on these files, so they are
-selectable with `ponysay -r emo=yes`.
-
-The original (classic) art is kept intact alongside the emo art as
-`twilightclassic`; render it with:
-
-```sh
-pixi run ponysay -f twilightclassic
-```
-
-To regenerate the emo art from the classic originals (the script is
-idempotent):
-
-```sh
-python3 scripts/make-emo-pony.py
-```
-
 ### `pixi run smoke`
 
 Installs ponysay into `.pixi/envs/default` (via the `install` task) and then
 runs `ponysay -q twilight`.  A successful run prints an emo
 `dear diary, ...` twilight quote with the emo twilight artwork.
+
+## Emo pony art
+
+The emo theme also extends to the artwork.  Two ponies have emo art, Twilight
+Sparkle and Fluttershy, and each has an xterm file and a Linux-VT file:
+
+| pony | xterm art | Linux-VT art |
+| --- | --- | --- |
+| Twilight Sparkle | `ponysay/ponies/twilight.pony` | `ponysay/ttyponies/twilight.pony` |
+| Fluttershy | `ponysay/ponies/fluttershy.pony` | `ponysay/ttyponies/fluttershy.pony` |
+
+All four files carry the `EMO: yes` metadata tag, so they are selectable with
+`ponysay -r emo=yes`.  The transformation keeps each pony's coat colours and
+changes the hair to dark navy `#00005f`, then adds emo details:
+
+- **Twilight Sparkle**: lavender coat/face preserved; mane dark navy
+  (`#00005f`) with the magenta/pink streak; tail stays blue-grey with pink; a
+  swept hair lock covers the far eye; the mouth is a subtle frown; dark navy
+  choker; striped leg warmers.  Except for the eye pupil, the art uses no pure
+  black.
+- **Fluttershy**: yellow coat/face preserved (palette 228/178, highlight 222);
+  the pink mane **and** tail (palette 218/175) become dark navy `#00005f`; a
+  side-swept fringe covers the near eye; dark navy choker at the base of the
+  neck; two navy stripes per leg.
+
+The original (classic) art is kept intact alongside the emo art as
+`twilightclassic` and `fluttershyclassic`; render them with:
+
+```sh
+pixi run ponysay -f twilightclassic
+pixi run ponysay -f fluttershyclassic
+```
+
+The classic files are byte-identical copies of the pre-emo originals, and only
+the plain pony name (`twilight`, `fluttershy`) selects the emo art.
+
+To regenerate the emo art from the classic originals:
+
+```sh
+python3 scripts/make-emo-pony.py
+```
+
+The script is spec-driven for both ponies and idempotent: a second run
+produces identical files and leaves the classic copies untouched.
 
 ## Running the installed binary directly
 
@@ -201,46 +222,79 @@ PATH="$PWD/.pixi/envs/default/bin:$PATH" .pixi/envs/default/bin/ponysay -q twili
 For other ponies, replace `twilight` with any name listed by
 `pixi run ponysay -l`.
 
-## Checking which Twilight art you are seeing
+## Checking which emo art you are seeing
 
-Verified on a clean clone of `main` (`63bff1a`) with pixi 0.83.0:
-`pixi run ponysay -q twilight` and `pixi run ponysay --emo` render the
-**emo** artwork, and the installed copies under
-`.pixi/envs/default/share/ponysay/` are byte-identical to the repo files
-(xterm md5 `6559f8f83b6686e0368a242facdcf511`, TTY md5
-`47aee3c2f285ad3608f733196b005bc6`).  Both files carry `EMO: yes`.
+Verified on a clean clone of `main` at the Fluttershy art commit (`67bb265`).
+pixi is not installed in this sandbox, so the checks ran the exact commands the
+pixi tasks run (`setup.py ... install`, then `sh scripts/ponysay-run.sh ...`)
+with Python 3.13.17, the version the lockfile pins.  `-q twilight`,
+`-q fluttershy` and `--emo` render the **emo** artwork, and the installed
+copies under `.pixi/envs/default/share/ponysay/` are byte-identical to the repo
+files:
+
+| pony | art | md5 |
+| --- | --- | --- |
+| twilight | emo xterm | `6559f8f83b6686e0368a242facdcf511` |
+| twilight | emo Linux-VT | `47aee3c2f285ad3608f733196b005bc6` |
+| twilight | classic xterm | `a46179ba979b5d691c1fb1d891eb1a38` |
+| twilight | classic Linux-VT | `a83ced2a590fcbfdc56c966a6bdab70a` |
+| fluttershy | emo xterm | `f18a6eaf87c7702180e65fc21221293f` |
+| fluttershy | emo Linux-VT | `7f4c684ff3bc61b9508c4aecdc583071` |
+| fluttershy | classic xterm | `d0d56f8949e299ad5f16d3bf803f9d6a` |
+| fluttershy | classic Linux-VT | `60d70a626495edbf93a5b3bcb723933f` |
+
+All four emo files carry `EMO: yes`; neither classic file does.
 
 Visual markers:
 
-- **Emo**: lavender coat and face (same as classic); dark navy mane
-  (`#00005f`) with the magenta/pink streak; a swept hair lock covers the far
-  eye (only one eye visible); subtle frown; dark navy choker at the neck;
-  dark navy horizontal bars across the legs (striped leg warmers).  The art
-  uses no pure black except the eye pupil.
-- **Classic**: light lilac mane and face; both eyes and a smile visible; no
-  choker; plain legs.
-- The magenta mane streak is **not** a useful marker: both art files have it.
-- Both xterm and TTY art render fully at 80 columns.  In particular,
-  `pixi run ponysay -f twilight -o -V` is identical to
-  `PONYSAY_FULL_WIDTH=1`; the TTY renderer's KMS-palette width bug
-  (`Backend.getColour` over-reads `]P...0` defs) does not trigger because
-  the art uses black only for the eye pupil.  Art with large pure-black
-  areas would still be truncated at 80 columns.
+- **Twilight emo**: lavender coat and face (same as classic); dark navy mane
+  (`#00005f`) with the magenta/pink streak; tail blue-grey with pink; a swept
+  hair lock covers the far eye (only one eye visible); subtle frown; dark navy
+  choker at the neck; dark navy horizontal bars across the legs (striped leg
+  warmers).  The art uses no pure black except the eye pupil.
+- **Twilight classic**: light lilac mane and face; both eyes and a smile
+  visible; no choker; plain legs.
+- **Fluttershy emo**: yellow coat and face (same as classic); pink mane and
+  tail replaced by dark navy (`#00005f`); a side-swept fringe covers the near
+  eye; dark navy choker; two navy stripes per leg.
+- **Fluttershy classic**: pink mane and tail; both eyes visible; no choker;
+  plain legs.
+- Colour is a better marker than shape here: for Twilight the magenta mane
+  streak is **not** useful (both art files have it), and for Fluttershy the
+  pink mane/tail is the marker (the emo art has no pink).
+
+Both emo arts render fully at 80 columns in xterm and Linux VT: Twilight is
+53 columns wide and Fluttershy 54.  For both, the art-only render
+(`ponysay -o -f <pony>`, plus `-V` for Linux VT) at 80 columns is
+byte-identical to the `PONYSAY_FULL_WIDTH=1` render.  The emo Fluttershy TTY
+art avoids `]P...0` palette definitions on its art rows; the generator nudges
+the blue step (`#d7af00` → `#d7af01`, `#000000` → `#000001`), which looks the
+same but does not trip `Backend.getColour`'s over-read.  Art with large
+pure-black areas would still be truncated at 80 columns.
+
+The **classic** Fluttershy TTY art still truncates at 80 columns.  It is the
+untouched upstream art, which uses `]P...0` palette definitions, so this is a
+pre-existing `Backend.getColour` defect and not an emo regression: at 80
+columns it renders byte-identically to the pre-emo checkout (`fac2a7f`).  The
+classic Twilight TTY art does not truncate.
 
 Command-line tells:
 
 ```sh
-pixi run ponysay -l          # lists both `twilight` and `twilightclassic`;
-                             # bold = pony has quotes, twilightclassic is plain
-grep '^EMO' ponysay/ponies/twilight.pony ponysay/ttyponies/twilight.pony
+pixi run ponysay -l          # lists twilight, fluttershy and both *classic*
+                             # twins; bold = the pony has quotes
+grep '^EMO' ponysay/ponies/twilight.pony ponysay/ttyponies/twilight.pony \
+            ponysay/ponies/fluttershy.pony ponysay/ttyponies/fluttershy.pony
+pixi run ponysay -q fluttershy        # emo fluttershy art + dear diary quote
 pixi run ponysay -q twilightclassic   # classic art + fallback quote
                                       # "Zecora! Help me, I am mute!"
 ```
 
-`twilightclassic` has no quote file, so `-q twilightclassic` prints the
-built-in fallback quote.  `pixi run ponysay -f twilightclassic -q` prints the
-classic art with an **empty** balloon: `-q` at the end takes no pony
-argument, so the message is read from stdin (empty in a non-interactive run).
+The two `*classic` ponies have no quote file, so `-q twilightclassic` and
+`-q fluttershyclassic` print the built-in fallback quote.
+`pixi run ponysay -f twilightclassic -q` prints the classic art with an
+**empty** balloon: `-q` at the end takes no pony argument, so the message is
+read from stdin (empty in a non-interactive run).
 
 The `-r` restriction must come **before** `-q`.  `-q` takes the pony name as
 its argument, so `ponysay -q -r emo=yes` treats `-r` as the pony name and
@@ -250,7 +304,7 @@ correction it quietly renders some other pony (observed `tom`, `cow`, `joe`
 and `zecora`).  Use:
 
 ```sh
-pixi run ponysay -r emo=yes -q     # emo twilight, always
+pixi run ponysay -r emo=yes -q     # a random emo pony, always
 pixi run ponysay --emo             # same, via the wrapper
 ```
 
@@ -274,11 +328,14 @@ keeps rendering the classic art until you run `pixi run install` (or remove
 
 ### Merge status
 
-The emo art is on `main`: commit `10e1701` ("Add emo Twilight Sparkle art
-alongside classic original") is an ancestor of `main`; the current art is the
-`63bff1a` redesign (lavender coat, dark navy mane).  All
-`origin/thread/*` topic branches are contained in `main`; there is no
-separate emo branch.  The only refs ahead of `main` are harness session and
-snapshot refs (`origin-sessions/*`, `origin-snapshots/*`), so
+Both emo ponies are on `main`: `67bb265` ("Add emo Fluttershy art alongside
+classic original") adds the Fluttershy art and turns
+`scripts/make-emo-pony.py` into a spec-driven generator for both ponies.  The
+earlier emo commits are ancestors too: `10e1701` added the first emo Twilight
+art and `63bff1a` redesigned it (lavender coat, dark navy mane).  All
+`origin/thread/*` topic branches are contained in `main`; there is no separate
+emo branch.  The only refs ahead of `main` are harness session and snapshot
+refs (`origin-sessions/*`, `origin-snapshots/*`), so
 `git log --all --not main` shows snapshots, not unmerged work.
-The classic xterm and TTY files are byte-identical to the pre-emo originals.
+The classic xterm and TTY files for both ponies are byte-identical to the
+pre-emo originals.

@@ -36,23 +36,29 @@ the quote compiler.  On systems without texinfo, build with:
 
 ## Emo artwork
 
-The emo theme also extends to the Twilight Sparkle artwork: see
-[`RUNNING.md`](../RUNNING.md) for the emo art files, the preserved
-`twilightclassic` original, and how to regenerate the art with
-`scripts/make-emo-pony.py`.
+The emo theme also extends to the artwork of two ponies, Twilight Sparkle and
+Fluttershy.  See [`RUNNING.md`](../RUNNING.md) for the emo art files, the
+preserved `twilightclassic` and `fluttershyclassic` originals, the visual
+markers, and how to regenerate the art with `scripts/make-emo-pony.py`.
+Both ponies keep their normal coat colours; the emo treatment changes the
+hair to dark navy and adds a fringe, choker and leg stripes.
 
 ## Using pixi
 
 The repository root has a [`pixi.toml`](../pixi.toml) manifest that declares a
-conda-forge Python interpreter (`>=3.8,<3.14`) and three tasks.  Texinfo is
-intentionally not declared: it is only needed for the optional info manual,
-and the default build task pins it away with `--without-info`.
+conda-forge Python interpreter (`>=3.8,<3.14`) and the build/run tasks
+(`build`, `quotes`, `install`, `ponysay`, `smoke`).  Texinfo is intentionally
+not declared: it is only needed for the optional info manual, and the default
+build task pins it away with `--without-info`.
 
 Install [pixi](https://pixi.sh) (e.g. `curl -fsSL https://pixi.sh/install.sh
 | bash`), then run the tasks from the repository root:
 
     pixi run build          # build without info/man/shell extras
     pixi run quotes         # compile only ponyquotes/* -> quotes/*
+    pixi run install        # install into the pixi env
+    pixi run ponysay        # random pony + quote (or pass ponysay arguments)
+    pixi run ponysay --emo  # random emo-tagged pony + her emo quote
     pixi run smoke          # install into the pixi env and render `ponysay -q twilight`
 
 `pixi run smoke` installs ponysay into `.pixi/envs/default` (passing
