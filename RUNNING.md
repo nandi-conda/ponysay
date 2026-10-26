@@ -219,15 +219,21 @@ pixi run ponysay --emo             # same, via the wrapper
 
 ### Stale installs
 
-`scripts/ponysay-run.sh` installs ponysay only when
-`.pixi/envs/default/bin/ponysay` is missing.  It never refreshes the data
-files, so a `.pixi/` created before the emo art landed keeps rendering the
-old classic art even though `ponysay/ponies/twilight.pony` has `EMO: yes`.
-This is reproducible by copying `twilightclassic.pony` over the installed
-`twilight.pony`: `pixi run ponysay -q twilight` then renders the classic art
-with no warning.  Run `pixi run install` (or remove `.pixi/`) to refresh;
-after that the installed copy matches the repo file again.  `.pixi/` is
-gitignored, so a fresh checkout is never stale.
+`scripts/ponysay-run.sh` installs ponysay when
+`.pixi/envs/default/bin/ponysay` is missing, and reinstalls when any file
+under `ponysay/` is newer than that binary.  A `.pixi/` created before the
+emo art landed therefore refreshes on the next `pixi run ponysay` instead of
+rendering the old classic art.  Verified in a clean clone: after checking
+out a newer commit over an existing environment, the first
+`pixi run ponysay -q twilight` rebuilt the binary (mtime changed) and
+rendered the emo art; immediate repeat runs did not reinstall (mtime
+unchanged).
+
+The mtime check compares the repo tree with the installed binary only.  It
+does not detect an installed copy that was changed out-of-band (for example
+copying `twilightclassic.pony` over the installed `twilight.pony`): that
+keeps rendering the classic art until you run `pixi run install` (or remove
+`.pixi/`).  `.pixi/` is gitignored, so a fresh checkout is never stale.
 
 ### Merge status
 
