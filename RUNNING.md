@@ -78,9 +78,10 @@ trying to create `/var/cache/ponysay`.
 ### `pixi run ponysay ...`
 
 Runs the installed ponysay.  The task installs ponysay quietly on first use,
-so it works from a clean checkout as well as after `pixi run smoke` without
-printing the full install log.  With no arguments it prints a random quote
-from a random pony:
+and reinstalls quietly whenever the source tree is newer than the installed
+binary (for example after a quote or pony-art change), so it works from a
+clean checkout and always serves current data without printing the full
+install log.  With no arguments it prints a random quote from a random pony:
 
 ```sh
 pixi run ponysay
