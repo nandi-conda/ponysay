@@ -20,6 +20,27 @@ The sandbox note still applies for bare `python3` calls outside pixi: prepend
 `/.sprite/languages/python/pyenv/shims` to `PATH` if the system python shim is
 broken.
 
+## DeepSeek API balance check
+
+[`scripts/deepseek-balance.py`](scripts/deepseek-balance.py) queries the
+official DeepSeek account balance endpoint
+(`GET https://api.deepseek.com/user/balance`) with the
+`Authorization: Bearer <API key>` header and prints, for each currency, the
+total / granted / topped-up balances and whether the balance is sufficient
+for API calls.
+
+The API key is read from the `DEEPSEEK_API_KEY` environment variable (or the
+`--api-key` argument) and is never printed. Use the environment variable so
+the key does not appear in the process list:
+
+```sh
+DEEPSEEK_API_KEY=sk-... python3 scripts/deepseek-balance.py
+```
+
+The script needs only the Python standard library. Run it with a working
+`python3`; in this sandbox that means the same PATH note as the build tasks
+above.
+
 ## Pixi tasks
 
 Run these from the repository root.
