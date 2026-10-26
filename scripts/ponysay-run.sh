@@ -23,9 +23,22 @@ PONYSAY="$ROOT/.pixi/envs/default/bin/ponysay"
 # deliberately does not depend on the `install` task, because that would run
 # the full setup.py install output before every quote.  The install command is
 # the same one used by `pixi run install` and `pixi run smoke`.
-if [ ! -x "$PONYSAY" ] || [ -n "$(find "$ROOT/ponysay" -type f -newer "$PONYSAY" -print -quit 2>/dev/null)" ]; then
+#
+# The source scan skips `.pixi/` (it holds the installed binary itself, so
+# scanning it would always look stale), `.git/`, and `docs/` (documentation
+# does not change the install).
+needs_install=0
+if [ ! -x "$PONYSAY" ]; then
+    needs_install=1
+elif [ -n "$(find "$ROOT" \
+        \( -path "$ROOT/.pixi" -o -path "$ROOT/.git" -o -path "$ROOT/docs" \) -prune \
+        -o -type f -newer "$PONYSAY" -print -quit 2>/dev/null)" ]; then
+    needs_install=1
+fi
+
+if [ "$needs_install" -eq 1 ]; then
     LOG="${TMPDIR:-/tmp}/ponysay-install.$$.log"
-    if ! (cd "$ROOT/ponysay" && python3 setup.py \
+    if ! (cd "$ROOT" && python3 setup.py \
             --freedom=partial --without-info --without-man --without-shell \
             --without-shared-cache \
             --prefix "$ROOT/.pixi/envs/default" install >"$LOG" 2>&1); then
@@ -47,7 +60,7 @@ export PYTHONWARNINGS=ignore
 # prefer it, and fall back to the source tree if the installed data is
 # missing.  No matches prints nothing and still succeeds.
 list_emo_ponies() {
-    for dir in "$ROOT/.pixi/envs/default/share/ponysay/ponies" "$ROOT/ponysay/ponies"; do
+    for dir in "$ROOT/.pixi/envs/default/share/ponysay/ponies" "$ROOT/ponies"; do
         [ -d "$dir" ] || continue
         for pony in "$dir"/*.pony; do
             [ -f "$pony" ] || continue

@@ -1,13 +1,15 @@
 # Pixi manifest for the ponysay project.
 #
-# The upstream ponysay checkout (with the emo `dear diary, ...` quote set)
-# lives in `ponysay/`.  The build is pure Python once the optional
-# info/man/shell extras are disabled, so `python` is the only dependency we
-# declare.  Texinfo (`makeinfo`) is intentionally NOT declared: it is only
-# needed for the optional info manual, and the default build task pins it away
-# with `--without-info`.
+# This repository *is* the ponysay source tree (the emo `dear diary, ...`
+# quote set included), so the tasks below run `setup.py` from the repo root.
+# The build is pure Python once the optional info/man/shell extras are
+# disabled, so `python` is the only dependency we declare.  Texinfo
+# (`makeinfo`) is intentionally NOT declared: it is only needed for the
+# optional info manual, and the default build task pins it away with
+# `--without-info`.
 #
-# See PIXI-VALIDATION.md for the clean-environment validation of these tasks.
+# See docs/notes/PIXI-VALIDATION.md for the clean-environment validation of
+# these tasks.
 
 [workspace]
 name = "ponysay"
@@ -24,11 +26,11 @@ python = ">=3.8,<3.14"
 
 # Build ponysay without the optional info/man/shell extras.  `--without-info`
 # is required on systems without texinfo/makeinfo.
-build = "cd ponysay && python3 setup.py --freedom=partial --without-info --without-man --without-shell build"
+build = "python3 setup.py --freedom=partial --without-info --without-man --without-shell build"
 
 # Compile only the quote data (`ponyquotes/*.<N>` -> `quotes/<group>.<N>`),
 # reproducing the quote-compiler step of `setup.py build`.
-quotes = "cd ponysay && python3 ../scripts/compile-quotes.py"
+quotes = "python3 scripts/compile-quotes.py"
 
 # Install ponysay into the pixi environment.  `setup.py install` performs the
 # build itself, so this task does not need an explicit `build` dependency.
@@ -37,7 +39,7 @@ quotes = "cd ponysay && python3 ../scripts/compile-quotes.py"
 # whose data paths would still point at `/usr/share/ponysay`), and
 # `--without-shared-cache` keeps a non-root install from trying to create
 # `/var/cache/ponysay`.
-install = "cd ponysay && python3 setup.py --freedom=partial --without-info --without-man --without-shell --without-shared-cache --prefix \"$PIXI_PROJECT_ROOT/.pixi/envs/default\" install"
+install = "python3 setup.py --freedom=partial --without-info --without-man --without-shell --without-shared-cache --prefix \"$PIXI_PROJECT_ROOT/.pixi/envs/default\" install"
 
 # Run the installed ponysay.  With no arguments this prints a random quote
 # from a random pony (`ponysay -q`).  `--emo` (or `-e`) restricts the choice

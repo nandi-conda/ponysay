@@ -37,7 +37,7 @@ the quote compiler.  On systems without texinfo, build with:
 ## Emo artwork
 
 The emo theme also extends to the artwork of two ponies, Twilight Sparkle and
-Fluttershy.  See [`RUNNING.md`](../RUNNING.md) for the emo art files, the
+Fluttershy.  See [`RUNNING.md`](RUNNING.md) for the emo art files, the
 preserved `twilightclassic` and `fluttershyclassic` originals, the visual
 markers, and how to regenerate the art with `scripts/make-emo-pony.py`.
 Both ponies keep their normal coat colours; the emo treatment changes the

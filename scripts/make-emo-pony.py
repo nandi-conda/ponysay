@@ -3,12 +3,12 @@
 '''
 Regenerate the emo pony art.
 
-The emo theme originally only covered the quotes (ponysay/ponyquotes/).  This
+The emo theme originally only covered the quotes (ponyquotes/).  This
 script extends it to the artwork by producing, from the untouched classic
 originals, for each pony in `PONIES`:
 
-  * ponysay/ponies/<pony>.pony       (xterm, 256-colour)
-  * ponysay/ttyponies/<pony>.pony    (Linux VT, 16-colour palette)
+  * ponies/<pony>.pony       (xterm, 256-colour)
+  * ttyponies/<pony>.pony    (Linux VT, 16-colour palette)
 
 The classic originals are kept side by side as `<pony>classic.pony`.  Those
 files are plain copies of the upstream art and are never written by this
@@ -406,7 +406,7 @@ def make_emo(pony, spec):
     first = spec['first_line']
     for kind in ('xterm', 'tty'):
         sub = 'ponies' if kind == 'xterm' else 'ttyponies'
-        src = '%s/ponysay/%s/%s.pony' % (ROOT, sub, classic_name)
+        src = '%s/%s/%s.pony' % (ROOT, sub, classic_name)
         meta, art_lines = split_pony(src)
         grid = (parse_xterm_art if kind == 'xterm' else parse_tty_art)('\n'.join(art_lines))
         g = transform_emo(grid, spec)
@@ -418,7 +418,7 @@ def make_emo(pony, spec):
             ser = grid_to_tty_lines(g[start:stop], safe_kms=spec.get('avoid_kms_overread', False))
         new_lines = art_lines[0:first] + ser + [art_lines[-1]]
         content = '$$$\n' + emo_meta(meta, spec['emo_name']) + '\n$$$\n' + '\n'.join(new_lines)
-        dest = '%s/ponysay/%s/%s.pony' % (ROOT, sub, pony)
+        dest = '%s/%s/%s.pony' % (ROOT, sub, pony)
         open(dest, 'w').write(content)
         print('wrote %s (%d bytes)' % (dest, len(content)))
 

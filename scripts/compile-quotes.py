@@ -3,7 +3,7 @@
 '''
 Compile only the pony quote data.
 
-This reproduces the quote-compiler step of `ponysay/setup.py build`: it reads
+This reproduces the quote-compiler step of `setup.py build`: it reads
 `ponyquotes/ponies` and copies each `ponyquotes/<pony>.<N>` file to
 `quotes/<group>.<N>` (the group is the `+`-joined pony line from
 `ponyquotes/ponies`).  It does not build the man/info/shell extras or the

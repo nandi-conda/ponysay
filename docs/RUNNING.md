@@ -1,10 +1,10 @@
 # How to run
 
 This repository is a ponysay fork with emo `dear diary, ...` quotes and
-emo-styled artwork for Twilight Sparkle and Fluttershy.  The build/run
-workflow is managed by [pixi](https://pixi.sh); the manifest is
-[`pixi.toml`](pixi.toml) at the repo root and the pinned lockfile is
-[`pixi.lock`](pixi.lock).
+emo-styled artwork for Twilight Sparkle and Fluttershy.  The repository root
+is the ponysay source tree itself.  The build/run workflow is managed by
+[pixi](https://pixi.sh); the manifest is [`pixi.toml`](../pixi.toml) at the
+repo root and the pinned lockfile is [`pixi.lock`](../pixi.lock).
 
 ## Prerequisites
 
@@ -23,7 +23,7 @@ broken.
 
 ## DeepSeek API balance check
 
-[`scripts/deepseek-balance.py`](scripts/deepseek-balance.py) queries the
+[`scripts/deepseek-balance.py`](../scripts/deepseek-balance.py) queries the
 official DeepSeek account balance endpoint
 (`GET https://api.deepseek.com/user/balance`) with the
 `Authorization: Bearer <API key>` header and prints, for each currency, the
@@ -48,7 +48,7 @@ Run these from the repository root.
 
 ### `pixi run build`
 
-Builds ponysay in `ponysay/` with:
+Builds ponysay in the repository root with:
 
 ```sh
 python3 setup.py --freedom=partial --without-info --without-man --without-shell build
@@ -59,9 +59,8 @@ zipapp without requiring texinfo.
 
 ### `pixi run quotes`
 
-Compiles only the quote data: `ponysay/ponyquotes/*.<N>` →
-`ponysay/quotes/<group>.<N>`.  Use this when you only want to regenerate the
-compiled quotes.
+Compiles only the quote data: `ponyquotes/*.<N>` → `quotes/<group>.<N>`.
+Use this when you only want to regenerate the compiled quotes.
 
 ### `pixi run install`
 
@@ -142,7 +141,7 @@ twilight
 
 The wrapper reads the `EMO: yes` header from the installed pony files
 (`.pixi/envs/default/share/ponysay/ponies/*.pony`), falling back to
-`ponysay/ponies/*.pony` when the installed data is missing.  The output is
+`ponies/*.pony` when the installed data is missing.  The output is
 plain text, sorted, and deterministic; ponies without an `EMO: yes` header are
 not listed, and if nothing matches the command prints nothing and still exits
 0.
@@ -164,8 +163,8 @@ Sparkle and Fluttershy, and each has an xterm file and a Linux-VT file:
 
 | pony | xterm art | Linux-VT art |
 | --- | --- | --- |
-| Twilight Sparkle | `ponysay/ponies/twilight.pony` | `ponysay/ttyponies/twilight.pony` |
-| Fluttershy | `ponysay/ponies/fluttershy.pony` | `ponysay/ttyponies/fluttershy.pony` |
+| Twilight Sparkle | `ponies/twilight.pony` | `ttyponies/twilight.pony` |
+| Fluttershy | `ponies/fluttershy.pony` | `ttyponies/fluttershy.pony` |
 
 All four files carry the `EMO: yes` metadata tag, so they are selectable with
 `ponysay -r emo=yes`.  The transformation keeps each pony's coat colours and
@@ -283,8 +282,8 @@ Command-line tells:
 ```sh
 pixi run ponysay -l          # lists twilight, fluttershy and both *classic*
                              # twins; bold = the pony has quotes
-grep '^EMO' ponysay/ponies/twilight.pony ponysay/ttyponies/twilight.pony \
-            ponysay/ponies/fluttershy.pony ponysay/ttyponies/fluttershy.pony
+grep '^EMO' ponies/twilight.pony ttyponies/twilight.pony \
+            ponies/fluttershy.pony ttyponies/fluttershy.pony
 pixi run ponysay -q fluttershy        # emo fluttershy art + dear diary quote
 pixi run ponysay -q twilightclassic   # classic art + fallback quote
                                       # "Zecora! Help me, I am mute!"
@@ -311,14 +310,14 @@ pixi run ponysay --emo             # same, via the wrapper
 ### Stale installs
 
 `scripts/ponysay-run.sh` installs ponysay when
-`.pixi/envs/default/bin/ponysay` is missing, and reinstalls when any file
-under `ponysay/` is newer than that binary.  A `.pixi/` created before the
-emo art landed therefore refreshes on the next `pixi run ponysay` instead of
-rendering the old classic art.  Verified in a clean clone: after checking
-out a newer commit over an existing environment, the first
-`pixi run ponysay -q twilight` rebuilt the binary (mtime changed) and
-rendered the emo art; immediate repeat runs did not reinstall (mtime
-unchanged).
+`.pixi/envs/default/bin/ponysay` is missing, and reinstalls when any file in
+the source tree is newer than that binary (the scan skips `.pixi/`, `.git/`
+and `docs/`).  A `.pixi/` created before the emo art landed therefore
+refreshes on the next `pixi run ponysay` instead of rendering the old classic
+art.  Verified in a clean clone: after checking out a newer commit over an
+existing environment, the first `pixi run ponysay -q twilight` rebuilt the
+binary (mtime changed) and rendered the emo art; immediate repeat runs did
+not reinstall (mtime unchanged).
 
 The mtime check compares the repo tree with the installed binary only.  It
 does not detect an installed copy that was changed out-of-band (for example

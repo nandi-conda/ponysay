@@ -4,6 +4,11 @@
 
 Today your terminal, tomorrow the world!
 
+> **This fork.** The pony quotes are rewritten as emo `dear diary, ...`
+> entries, and Twilight Sparkle and Fluttershy carry emo artwork.  See
+> [`docs/EMO-QUOTES.md`](docs/EMO-QUOTES.md) for the quote-data changes and
+> [`docs/RUNNING.md`](docs/RUNNING.md) for building and running with pixi.
+
 
 Dependencies
 ------------
