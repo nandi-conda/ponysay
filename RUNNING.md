@@ -1,9 +1,9 @@
 # How to run
 
-This repository is a ponysay fork with emo `dear diary, ...` quotes.  The
-build/run workflow is managed by [pixi](https://pixi.sh); the manifest is
-[`pixi.toml`](pixi.toml) at the repo root and the pinned lockfile is
-[`pixi.lock`](pixi.lock).
+This repository is a ponysay fork with emo `dear diary, ...` quotes and an
+emo-styled Twilight Sparkle artwork.  The build/run workflow is managed by
+[pixi](https://pixi.sh); the manifest is [`pixi.toml`](pixi.toml) at the repo
+root and the pinned lockfile is [`pixi.lock`](pixi.lock).
 
 ## Prerequisites
 
@@ -72,8 +72,33 @@ pixi run ponysay -q twilight
 pixi run ponysay -l
 ```
 
-`-q twilight` prints an emo `dear diary, ...` twilight quote; `-l` lists the
-installed ponies.
+`-q twilight` prints an emo `dear diary, ...` twilight quote and renders the
+emo twilight art (black mane, fringe over one eye, eyeliner, choker and
+striped leg warmers); `-l` lists the installed ponies.
+
+## Emo pony art
+
+The emo theme also extends to the artwork for Twilight Sparkle.  Both the
+xterm art (`ponysay/ponies/twilight.pony`) and the Linux-VT art
+(`ponysay/ttyponies/twilight.pony`) render an emo Twilight: black mane with a
+magenta streak, a fringe covering one eye, eyeliner with an under-eye shadow,
+a downturned mouth, a black choker and striped leg warmers.  The `EMO: yes`
+metadata tag is set on these files, so they are selectable with
+`ponysay -r emo=yes`.
+
+The original (classic) art is kept intact alongside the emo art as
+`twilightclassic`; render it with:
+
+```sh
+pixi run ponysay -f twilightclassic
+```
+
+To regenerate the emo art from the classic originals (the script is
+idempotent):
+
+```sh
+python3 scripts/make-emo-pony.py
+```
 
 ### `pixi run smoke`
 

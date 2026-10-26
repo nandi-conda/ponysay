@@ -34,6 +34,13 @@ the quote compiler.  On systems without texinfo, build with:
     python3 setup.py --freedom=partial \
         --without-info --without-man --without-shell build
 
+## Emo artwork
+
+The emo theme also extends to the Twilight Sparkle artwork: see
+[`RUNNING.md`](../RUNNING.md) for the emo art files, the preserved
+`twilightclassic` original, and how to regenerate the art with
+`scripts/make-emo-pony.py`.
+
 ## Using pixi
 
 The repository root has a [`pixi.toml`](../pixi.toml) manifest that declares a
