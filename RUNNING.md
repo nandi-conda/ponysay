@@ -264,7 +264,9 @@ keeps rendering the classic art until you run `pixi run install` (or remove
 ### Merge status
 
 The emo art is on `main`: commit `10e1701` ("Add emo Twilight Sparkle art
-alongside classic original") is an ancestor of `main` (verified at
-`e05dbbf`).  There is no separate emo branch and no unmerged commit
-(`git log --all --not main` is empty).  `twilightclassic.pony` is
-byte-identical to the pre-emo `twilight.pony`.
+alongside classic original") is an ancestor of `main`.  All
+`origin/thread/*` topic branches are contained in `main`; there is no
+separate emo branch.  The only refs ahead of `main` are harness session and
+snapshot refs (`origin-sessions/*`, `origin-snapshots/*`), so
+`git log --all --not main` shows snapshots, not unmerged work.
+`twilightclassic.pony` is byte-identical to the pre-emo `twilight.pony`.
